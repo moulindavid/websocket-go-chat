@@ -1,27 +1,31 @@
 package main
 
 import (
-    "errors"
-    "fmt"
-    "io"
-    "net/http"
-    "os"
+	"errors"
+	"flag"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
 )
 
-
-func getRoot(w http.ResponseWriter, r *http.Request){
-    fmt.Printf("got / request\n")
-    io.WriteString(w, "Webserver bip bop.. \n")
-}
-
-func getHello(w http.ResponseWriter, r *http.Request){
-    fmt.Printf("got / hello request\n")
-    io.WriteString(w, "HTTP Hello !\n")
+func serveHome(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.URL)
+	if r.URL.Path != "/" {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(w, r, "home.html")
 }
 
 func main() {
-	http.HandleFunc("/", getRoot)
-	http.HandleFunc("/hello", getHello)
+    flag.Parse()
+
+    http.HandleFunc("/", serveHome)
 
 	err := http.ListenAndServe(":3333", nil)
 
